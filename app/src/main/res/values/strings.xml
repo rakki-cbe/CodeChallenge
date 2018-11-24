@@ -3,4 +3,6 @@
     <string name="AddNew">Add New</string>
     <string name="City">City</string>
     <string name="CityNameIsNotValid">City name is not valid</string>
+    <string name="EnableInternetConnection">Enable internet for add new city</string>
+    <string name="SorryWeCouldNot">Sorry we could not process your request</string>
 </resources>

@@ -2,8 +2,10 @@ package com.example.radhakrishnan.codechallenge;
 
 import android.app.Dialog;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -18,7 +20,7 @@ import com.example.radhakrishnan.codechallenge.database.WeatherTable;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements WeatherView ,ServiceConnection,
+public class MainActivity extends AppCompatActivity implements InterFaces.WeatherView ,ServiceConnection,
         InterFaces.WeatherAdapterClick,View.OnClickListener {
     WeatherPresenter weatherPresenter;
     RecyclerView list;
@@ -67,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements WeatherView ,Serv
 
     @Override
     public void getDataFromDb() {
-        new getDataFromDB().execute();
+        new GetDataFromDB().execute();
 
     }
 
@@ -82,6 +84,25 @@ public class MainActivity extends AppCompatActivity implements WeatherView ,Serv
     @Override
     public void validateCityAdd(String city) {
         new validateCityForExisting(city).execute(city);
+    }
+
+    @Override
+    public boolean isInterNetAvailable() {
+            ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            return cm.getActiveNetworkInfo() != null;
+
+    }
+
+    @Override
+    public void pleaseEableInterNetToAddCity() {
+        Toast.makeText(this,getString(R.string.EnableInternetConnection),Toast.LENGTH_LONG).show();
+        showProgress(false);
+    }
+
+    @Override
+    public void sorryWeCouldNotProcessYourRequest() {
+        Toast.makeText(this,getString(R.string.SorryWeCouldNot),Toast.LENGTH_LONG).show();
+        showProgress(false);
     }
 
     @Override
@@ -139,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements WeatherView ,Serv
         }
     }
 
-    class getDataFromDB extends AsyncTask<Void,Integer,List<WeatherTable>>{
+    class GetDataFromDB extends AsyncTask<Void,Integer,List<WeatherTable>>{
 
     @Override
     protected List<WeatherTable> doInBackground(Void... voids) {
@@ -179,16 +200,14 @@ public class MainActivity extends AppCompatActivity implements WeatherView ,Serv
                 Toast.makeText(MainActivity.this,getString(R.string.CityNameIsNotValid),
                         Toast.LENGTH_LONG).show();
             }else{
-                weatherPresenter.service.getDataForOnceCity(city);
+                weatherPresenter.addNewCity(city);
+                dialog.dismiss();
+                showProgress(true);
             }
 
         }
 
-        protected void onPostExecute(boolean result) {
-            super.onPostExecute(result);
 
-
-
-        }
     }
+
 }

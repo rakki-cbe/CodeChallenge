@@ -1,6 +1,7 @@
 package com.example.radhakrishnan.codechallenge.Network;
 
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -21,7 +22,7 @@ public class NetworkHelper {
     public String downloadUrl(URL url) throws IOException {
         InputStream stream = null;
         HttpURLConnection connection = null;
-        String result = null;
+        String result = "";
         try {
             connection = (HttpURLConnection) url.openConnection();
             // Timeout for reading InputStream arbitrarily set to 3000ms.
@@ -39,14 +40,17 @@ public class NetworkHelper {
             int responseCode = connection.getResponseCode();
             if (responseCode != HttpURLConnection.HTTP_OK) {
                 throw new IOException("HTTP error code: " + responseCode);
+
             }
             // Retrieve the response body as an InputStream.
             stream = connection.getInputStream();
             //publishProgress(DownloadCallback.Progress.GET_INPUT_STREAM_SUCCESS, 0);
-            if (stream != null) {
-                // Converts Stream to String with max length of 500.
-                result = readStream(stream, 500);
+            BufferedReader bReader = new BufferedReader(new InputStreamReader(stream));
+            String temp;
+            while ((temp = bReader.readLine()) != null) {
+                result += temp;
             }
+
         } finally {
             // Close Stream and disconnect HTTPS connection.
             if (stream != null) {
@@ -83,9 +87,10 @@ public class NetworkHelper {
             // Retrieve the response body as an InputStream.
             stream = connection.getInputStream();
             //publishProgress(DownloadCallback.Progress.GET_INPUT_STREAM_SUCCESS, 0);
-            if (stream != null) {
-                // Converts Stream to String with max length of 500.
-                result = readStream(stream, 500);
+            BufferedReader bReader = new BufferedReader(new InputStreamReader(stream));
+            String temp;
+            while ((temp = bReader.readLine()) != null) {
+                result += temp;
             }
         } finally {
             // Close Stream and disconnect HTTPS connection.

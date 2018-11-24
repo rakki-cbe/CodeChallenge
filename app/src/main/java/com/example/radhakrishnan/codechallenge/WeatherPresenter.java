@@ -10,15 +10,15 @@ import com.example.radhakrishnan.codechallenge.database.WeatherTable;
 import java.util.List;
 
 public class WeatherPresenter  implements InterFaces.weatherDataInserted {
-    WeatherView v;
+    InterFaces.WeatherView v;
     InterFaces.WeatherService service;
 
-    public WeatherPresenter(WeatherView v) {
+     WeatherPresenter(InterFaces.WeatherView v) {
         this.v = v;
 
     }
 
-    public void setWeatherService(InterFaces.WeatherService service) {
+     void setWeatherService(InterFaces.WeatherService service) {
         this.service=service;
         service.boundFromActivity();
         service.setCallBack(this);
@@ -29,19 +29,29 @@ public class WeatherPresenter  implements InterFaces.weatherDataInserted {
 
     @Override
     public void weatherDataProcessed(boolean update) {
+         if(update)
             v.getDataFromDb();
+         else {
+             v.showProgress(false);
+             v.sorryWeCouldNotProcessYourRequest();
+         }
     }
 
-    public List<WeatherTable> getDataFromDb(SQLiteDatabase db) {
+     List<WeatherTable> getDataFromDb(SQLiteDatabase db) {
        return WeatherTabeHelper.getInstance().getWeatherDataForEachCity(db);
     }
 
-    public void forceDataUpdate() {
-        v.showProgress(true);
-        service.forceDataUpdate();
+     void forceDataUpdate() {
+         if(v.isInterNetAvailable()) {
+             v.showProgress(true);
+             service.forceDataUpdate();
+         }else{
+             v.getDataFromDb();
+             v.pleaseEableInterNetToAddCity();
+         }
     }
 
-    public void addCity(String cityNew) {
+     void addCity(String cityNew) {
         if(cityNew!=null && !cityNew.equals("")){
             v.validateCityAdd(cityNew);
         }
@@ -50,7 +60,17 @@ public class WeatherPresenter  implements InterFaces.weatherDataInserted {
         }
     }
 
-    public Boolean isCityPresent(SQLiteDatabase db,String city) {
+     Boolean isCityPresent(SQLiteDatabase db,String city) {
         return WeatherTabeHelper.getInstance().checkCityPresent(db,city);
+    }
+
+     void addNewCity(String city) {
+        if(v.isInterNetAvailable()) {
+            service.getDataForOnceCity(city);
+        }
+        else{
+            v.pleaseEableInterNetToAddCity();
+            v.showProgress(true);
+        }
     }
 }

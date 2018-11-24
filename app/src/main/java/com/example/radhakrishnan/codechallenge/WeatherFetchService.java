@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
@@ -203,7 +204,6 @@ public class WeatherFetchService extends Service implements InterFaces.WeatherSe
         public void run() {
             super.run();
             while (loop){
-                Log.v(log,this.getId()+"");
                 try {
                     if(isBound || !isFirstTime ){
                         callAndUpdateUi();
@@ -213,12 +213,8 @@ public class WeatherFetchService extends Service implements InterFaces.WeatherSe
                     } else {
                         isFirstTime = false;
                     }
-                    Thread.sleep(5*60*1000);
+                    Thread.sleep(30*60*1000);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
                     e.printStackTrace();
                 }
 
@@ -228,17 +224,10 @@ public class WeatherFetchService extends Service implements InterFaces.WeatherSe
     }
 
     class SingleTimeThread implements Runnable{
-        public boolean loop=true;
         @Override
         public void run() {
-                try {
                         callAndUpdateUi();
 
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
 
             }
 
@@ -253,28 +242,35 @@ public class WeatherFetchService extends Service implements InterFaces.WeatherSe
 
         @Override
         public void run() {
-            try {
                 callAndUpdateUi(city);
 
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+
 
         }
 
 
     }
 
-    private void callAndUpdateUi() throws IOException {
-        boolean b= helper.fetchData();
+    private void callAndUpdateUi()  {
+        boolean b= false;
+        try {
+            b = helper.fetchData();
+        } catch (IOException e) {
+            e.printStackTrace();
+            b=false;
+        }
         Message message = handler.obtainMessage(UPDATE_UI,b);
         message.sendToTarget();
     }
 
-    private void callAndUpdateUi(String city) throws IOException {
-        boolean b= helper.fetchData(city);
+    private void callAndUpdateUi(String city)  {
+        boolean b= false;
+        try {
+            b = helper.fetchData(city);
+        } catch (IOException e) {
+            e.printStackTrace();
+            b=false;
+        }
         Message message = handler.obtainMessage(UPDATE_UI,b);
         message.sendToTarget();
     }
@@ -293,6 +289,12 @@ public class WeatherFetchService extends Service implements InterFaces.WeatherSe
 
 
     }
+
+    public boolean isInterNetAvailable() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        return cm.getActiveNetworkInfo() != null;
+
+    }
     class MyHandler extends Handler{
 
 
@@ -305,7 +307,7 @@ public class WeatherFetchService extends Service implements InterFaces.WeatherSe
             super.handleMessage(msg);
             if(msg.what==UPDATE_UI){
                 if(callBack!=null){
-                    callBack.weatherDataProcessed(true);
+                    callBack.weatherDataProcessed((Boolean) msg.obj);
                 }
             }
         }

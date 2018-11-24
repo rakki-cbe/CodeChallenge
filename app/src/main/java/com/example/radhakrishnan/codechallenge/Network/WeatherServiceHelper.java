@@ -2,6 +2,7 @@ package com.example.radhakrishnan.codechallenge.Network;
 
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import com.example.radhakrishnan.codechallenge.database.DbHelper;
 import com.example.radhakrishnan.codechallenge.database.WeatherTabeHelper;
@@ -23,6 +24,8 @@ public class WeatherServiceHelper {
         this.gson = new Gson();
     }
 
+
+
     public boolean fetchData() throws IOException {
         boolean isSucess =true;
         List<String> city = WeatherTabeHelper.getInstance().getCity(db.getReadableDatabase());
@@ -34,6 +37,7 @@ public class WeatherServiceHelper {
                     new URL(
                             "http://api.openweathermap.org/data/2.5/weather?" +
                                     "q="+item+"&APPID=cb26d2d738eff8b012070fa6be70d17a"));
+            Log.d("Response",result);
             if (result != null && !result.equals("")) {
                 WeatherApiResponse response = gson.fromJson(result, WeatherApiResponse.class);
                 boolean b = WeatherTabeHelper.getInstance().insertToDb(db.getWritableDatabase(), response);

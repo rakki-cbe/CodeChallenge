@@ -9,7 +9,6 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.os.Binder;
@@ -22,16 +21,10 @@ import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-import com.example.radhakrishnan.codechallenge.Network.NetworkHelper;
-import com.example.radhakrishnan.codechallenge.Network.WeatherApiResponse;
 import com.example.radhakrishnan.codechallenge.Network.WeatherServiceHelper;
 import com.example.radhakrishnan.codechallenge.database.DbHelper;
-import com.example.radhakrishnan.codechallenge.database.WeatherTabeHelper;
-import com.google.gson.Gson;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 public class WeatherFetchService extends Service implements InterFaces.WeatherService {
     public static int UPDATE_UI=2;
@@ -49,6 +42,7 @@ public class WeatherFetchService extends Service implements InterFaces.WeatherSe
         super.onCreate();
         db=new DbHelper(this);
         helper = new WeatherServiceHelper(db);
+        isFirstTime = false;
 
     }
 
@@ -135,20 +129,6 @@ public class WeatherFetchService extends Service implements InterFaces.WeatherSe
         // Make head-up notification.
         builder.setFullScreenIntent(pendingIntent, true);
 
-      /*  // Add Play button intent in notification.
-        Intent playIntent = new Intent(this, MyForeGroundService.class);
-        playIntent.setAction(ACTION_PLAY);
-        PendingIntent pendingPlayIntent = PendingIntent.getService(this, 0, playIntent, 0);
-        NotificationCompat.Action playAction = new NotificationCompat.Action(android.R.drawable.ic_media_play, "Play", pendingPlayIntent);
-        builder.addAction(playAction);
-
-        // Add Pause button intent in notification.
-        Intent pauseIntent = new Intent(this, MyForeGroundService.class);
-        pauseIntent.setAction(ACTION_PAUSE);
-        PendingIntent pendingPrevIntent = PendingIntent.getService(this, 0, pauseIntent, 0);
-        NotificationCompat.Action prevAction = new NotificationCompat.Action(android.R.drawable.ic_media_pause, "Pause", pendingPrevIntent);
-        builder.addAction(prevAction);
-*/
         // Build the notification.
         Notification notification = builder.build();
 
@@ -197,9 +177,43 @@ public class WeatherFetchService extends Service implements InterFaces.WeatherSe
         super.onDestroy();
     }
 
+    private void callAndUpdateUi() {
+        boolean b;
+        try {
+            b = helper.fetchData();
+        } catch (IOException e) {
+            e.printStackTrace();
+            b = false;
+        }
+        Message message = handler.obtainMessage(UPDATE_UI, b);
+        message.sendToTarget();
+    }
+
+    private void callAndUpdateUi(String city) {
+        boolean b;
+        try {
+            b = helper.fetchData(city);
+        } catch (IOException e) {
+            e.printStackTrace();
+            b = false;
+        }
+        Message message = handler.obtainMessage(UPDATE_UI, b);
+        message.sendToTarget();
+    }
+
+    class SingleTimeThread implements Runnable {
+        @Override
+        public void run() {
+            callAndUpdateUi();
+
+
+        }
+
+
+    }
 
     class MyThread extends Thread{
-        public boolean loop=true;
+        boolean loop = true;
         @Override
         public void run() {
             super.run();
@@ -223,20 +237,10 @@ public class WeatherFetchService extends Service implements InterFaces.WeatherSe
         }
     }
 
-    class SingleTimeThread implements Runnable{
-        @Override
-        public void run() {
-                        callAndUpdateUi();
-
-
-            }
-
-
-    }
     class ForOneCity implements Runnable{
         String city;
 
-        public ForOneCity(String city) {
+        ForOneCity(String city) {
             this.city = city;
         }
 
@@ -251,30 +255,6 @@ public class WeatherFetchService extends Service implements InterFaces.WeatherSe
 
     }
 
-    private void callAndUpdateUi()  {
-        boolean b= false;
-        try {
-            b = helper.fetchData();
-        } catch (IOException e) {
-            e.printStackTrace();
-            b=false;
-        }
-        Message message = handler.obtainMessage(UPDATE_UI,b);
-        message.sendToTarget();
-    }
-
-    private void callAndUpdateUi(String city)  {
-        boolean b= false;
-        try {
-            b = helper.fetchData(city);
-        } catch (IOException e) {
-            e.printStackTrace();
-            b=false;
-        }
-        Message message = handler.obtainMessage(UPDATE_UI,b);
-        message.sendToTarget();
-    }
-
 
     @Override
     public void onRebind(Intent intent) {
@@ -283,7 +263,7 @@ public class WeatherFetchService extends Service implements InterFaces.WeatherSe
     }
 
     class MyBinder extends Binder {
-      public   InterFaces.WeatherService getService(){
+        InterFaces.WeatherService getService() {
             return WeatherFetchService.this;
         }
 
@@ -298,7 +278,7 @@ public class WeatherFetchService extends Service implements InterFaces.WeatherSe
     class MyHandler extends Handler{
 
 
-        public MyHandler(Looper mainLooper) {
+        MyHandler(Looper mainLooper) {
             super(mainLooper);
         }
 

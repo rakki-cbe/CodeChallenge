@@ -20,7 +20,7 @@ import com.example.radhakrishnan.codechallenge.database.WeatherTable;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements InterFaces.WeatherView ,ServiceConnection,
+public class ListActivity extends AppCompatActivity implements InterFaces.WeatherView, ServiceConnection,
         InterFaces.WeatherAdapterClick,View.OnClickListener {
     WeatherPresenter weatherPresenter;
     RecyclerView list;
@@ -62,10 +62,6 @@ public class MainActivity extends AppCompatActivity implements InterFaces.Weathe
 
     }
 
-    @Override
-    public void updateView(List<Weather> list) {
-
-    }
 
     @Override
     public void getDataFromDb() {
@@ -108,7 +104,8 @@ public class MainActivity extends AppCompatActivity implements InterFaces.Weathe
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         weatherPresenter.setWeatherService(((WeatherFetchService.MyBinder) service).getService());
-        weatherPresenter.forceDataUpdate();
+        //weatherPresenter.forceDataUpdate();
+        getDataFromDb();
 
 
     }
@@ -131,6 +128,8 @@ public class MainActivity extends AppCompatActivity implements InterFaces.Weathe
 
     @Override
     public void itemClicked(WeatherTable item) {
+        startActivityForResult(WeatherDetailActivity.getIntentForActivity(this,
+                item.getCityName()), 32);
 
     }
 
@@ -182,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements InterFaces.Weathe
     class validateCityForExisting extends AsyncTask<String,Integer,Boolean>{
             String city;
 
-        public validateCityForExisting(String city) {
+        validateCityForExisting(String city) {
             this.city = city;
         }
 
@@ -197,7 +196,7 @@ public class MainActivity extends AppCompatActivity implements InterFaces.Weathe
             super.onPostExecute(aBoolean);
             if(aBoolean) {
                 showProgress(false);
-                Toast.makeText(MainActivity.this,getString(R.string.CityNameIsNotValid),
+                Toast.makeText(ListActivity.this, getString(R.string.CityNameIsNotValid),
                         Toast.LENGTH_LONG).show();
             }else{
                 weatherPresenter.addNewCity(city);

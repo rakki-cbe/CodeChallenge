@@ -9,14 +9,13 @@ import com.example.radhakrishnan.codechallenge.database.WeatherTabeHelper;
 import com.google.gson.Gson;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
 public class WeatherServiceHelper {
-    NetworkHelper networkHelper;
-    SQLiteOpenHelper db;
-    Gson gson;
+    private NetworkHelper networkHelper;
+    private SQLiteOpenHelper db;
+    private Gson gson;
 
     public WeatherServiceHelper(DbHelper db) {
         networkHelper=new NetworkHelper();
@@ -36,12 +35,12 @@ public class WeatherServiceHelper {
             String result = networkHelper.downloadUrl(
                     new URL(
                             "http://api.openweathermap.org/data/2.5/weather?" +
-                                    "q="+item+"&APPID=cb26d2d738eff8b012070fa6be70d17a"));
+                                    "q=" + item + "&APPID=97379a6635c2d1da26a58fc6eede8637"));
             Log.d("Response",result);
             if (result != null && !result.equals("")) {
                 WeatherApiResponse response = gson.fromJson(result, WeatherApiResponse.class);
                 boolean b = WeatherTabeHelper.getInstance().insertToDb(db.getWritableDatabase(), response);
-                if(b==false)
+                if (!b)
                  isSucess=false;
             }
         }
@@ -57,7 +56,7 @@ public class WeatherServiceHelper {
             if (result != null && !result.equals("")) {
                 WeatherApiResponse response = gson.fromJson(result, WeatherApiResponse.class);
                 boolean b = WeatherTabeHelper.getInstance().insertToDb(writDb, response);
-                if(b==false) {
+                if (!b) {
                     isSucess = false;
                     WeatherTabeHelper.getInstance().insertToCity(writDb,city);
                 }

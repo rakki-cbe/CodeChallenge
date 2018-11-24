@@ -76,6 +76,8 @@ public class WeatherTabeHelper {
             }
             while (c.moveToNext());
         }
+        if (c != null)
+            c.close();
         return  city;
     }
     public List<WeatherTable> getWeatherDataForEachCity(SQLiteDatabase db){
@@ -99,6 +101,8 @@ public class WeatherTabeHelper {
 
                }while (c.moveToNext());
            }
+        if (c != null)
+            c.close();
            return  data;
 
     }
@@ -106,9 +110,37 @@ public class WeatherTabeHelper {
     public Boolean checkCityPresent(SQLiteDatabase db, String city) {
         Cursor c = db.query(CITY_TABLE, new String[]{COLOMN_city}, COLOMN_city + " = ?", new String[]{city}, null,
                 null, null);
-        if (c != null && c.getCount() != 0) {
-            return true;
+        boolean val = c.getCount() > 0;
+        c.close();
+        return val;
+    }
+
+    public List<WeatherTable> getWeatherHistoryDataForCity(SQLiteDatabase db, String city) {
+        Cursor c = db.query(WEATHER_TABLE, null, COLOMN_city + " = ?", new String[]{city},
+                COLOMN_time,//Added this to avoid duplicate .
+                // We can prevent same data to be inserted in to table by create composite primary key (city name and time)
+                null, COLOMN_time + " DESC");
+        List<WeatherTable> data = new ArrayList<>();
+        if (c != null && c.getCount() > 0) {
+            c.moveToNext();
+            do {
+                data.add(new WeatherTable(c.getString(c.getColumnIndex(COLOMN_id)),
+                        c.getString(c.getColumnIndex(COLOMN_REPORT)),
+                        c.getString(c.getColumnIndex(COLOMN_REPORT_DESC)),
+                        c.getString(c.getColumnIndex(COLOMN_temp)),
+                        c.getString(c.getColumnIndex(COLOMN_pressure)),
+                        c.getString(c.getColumnIndex(COLOMN_humidity)),
+                        c.getString(c.getColumnIndex(COLOMN_tmp_min)),
+                        c.getString(c.getColumnIndex(COLOMN_tmp_max)),
+                        c.getLong(c.getColumnIndex(COLOMN_time)),
+                        c.getString(c.getColumnIndex(COLOMN_city)),
+                        c.getString(c.getColumnIndex(COLOMN_city_id))));
+
+            } while (c.moveToNext());
         }
-        return false;
+        if (c != null)
+            c.close();
+        return data;
+
     }
 }

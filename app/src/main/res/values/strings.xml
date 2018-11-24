@@ -5,4 +5,8 @@
     <string name="CityNameIsNotValid">City name is not valid</string>
     <string name="EnableInternetConnection">Enable internet for add new city</string>
     <string name="SorryWeCouldNot">Sorry we could not process your request</string>
+    <string name="Temp">Temp: %1$s</string>
+    <string name="humidity">Humidity : %1$s</string>
+    <string name="temp_max">Temp max:  %1$s</string>
+    <string name="temp_min">Temp min :  %1$s</string>
 </resources>

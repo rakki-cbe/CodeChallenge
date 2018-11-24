@@ -4,11 +4,9 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.example.radhakrishnan.codechallenge.database.WeatherTable;
 
-import java.util.List;
-
 public interface InterFaces {
     interface weatherDataInserted{
-        public  void weatherDataProcessed(boolean update);
+        void weatherDataProcessed(boolean update);
 
     }
     interface  WeatherService{
@@ -24,15 +22,25 @@ public interface InterFaces {
         void itemClicked(WeatherTable item);
         void addNewItemClicked();
     }
-    public interface WeatherView {
+
+    interface WeatherView {
         void showProgress(Boolean b);
-        void updateView(List<Weather> list);
+
         void getDataFromDb();
+
         void errorInvalidCity();
+
         void validateCityAdd(String city);
+
         boolean isInterNetAvailable();
+
         void  pleaseEableInterNetToAddCity();
 
         void sorryWeCouldNotProcessYourRequest();
+    }
+
+    interface WeatherDetailView {
+        void showProgress(Boolean b);
+
     }
 }
